@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="Controls/Controls.csproj" />
   <Project Path="SwagLabs/SwagLabs.csproj" />
 </Solution>
