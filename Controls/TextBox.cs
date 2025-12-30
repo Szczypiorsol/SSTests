@@ -9,5 +9,10 @@ namespace Controls
         {
             await _locator.FillAsync(text);
         }
+
+        public async Task<string> GetTextAsync()
+        {
+            return await _locator.TextContentAsync() ?? string.Empty;
+        }
     }
 }

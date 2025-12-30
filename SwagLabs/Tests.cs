@@ -15,27 +15,18 @@ namespace SwagLabs
             var page = await browser.NewPageAsync();
             await page.GotoAsync("https://www.saucedemo.com/");
 
-            LoginPage loginPage = new(page);
-            await loginPage.CheckIfViewIsVisibleAsync();
+            LoginPage loginPage = await LoginPage.InitAsync(page);
             ProductsPage productsPage = await loginPage.LoginAsync("standard_user", "secret_sauce");
-            await productsPage.CheckIfViewIsVisibleAsync();
             await productsPage.ClickOnProductByOrdinalNumberAsync(1);
-            await productsPage.ClickOnCartButtonAsync();
-
-            //// Expect a title "to contain" a substring.
-            //await Expect(Page).ToHaveTitleAsync(new Regex("Playwright"));
-
-            //// create a locator
-            //var getStarted = Page.Locator("text=Get Started");
-
-            //// Expect an attribute "to be strictly equal" to the value.
-            //await Expect(getStarted).ToHaveAttributeAsync("href", "/docs/intro");
-
-            //// Click the get started link.
-            //await getStarted.ClickAsync();
-
-            //// Expects the URL to contain intro.
-            //await Expect(Page).ToHaveURLAsync(new Regex(".*intro"));
+            CartPage cartPage = await productsPage.ClickOnCartButtonAsync();
+            await Expect(cartPage.GetCartItemLocatorAsync()).ToHaveCountAsync(1);
+            await Expect(cartPage.GetCartItemNameLocatorByOrdinalNumberAsync(0)).ToHaveTextAsync("Sauce Labs Bike Light");
+            await Expect(cartPage.GetCartItemPriceLocatorByOrdinalNumberAsync(0)).ToHaveTextAsync("$9.99");
+            CheckoutPage checkoutPage = await cartPage.ClickCheckoutAsync();
+            await checkoutPage.FillCheckoutInformationAsync("John", "Doe", "12345");
+            CheckoutOverviewPage checkoutOverviewPage = await checkoutPage.ClickContinueAsync();
+            CheckoutCompletePage checkoutCompletePage = await checkoutOverviewPage.ClickFinishAsync();
+            productsPage = await checkoutCompletePage.ClickBackHomeAsync();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Playwright;
+using System.Threading.Tasks;
 using static Controls.Control;
 
 namespace Controls
@@ -8,6 +9,8 @@ namespace Controls
         private readonly IPage _page = page;
         private readonly ILocator _listItemLocator = GetLocator(page, getByItem, AriaRole.Listitem, itemName);
         private readonly string _listItemName = itemName;
+
+        public ILocator ListItemLocator => _listItemLocator;
 
         public async Task<int> GetItemCountAsync()
         {
@@ -33,6 +36,11 @@ namespace Controls
             {
                 throw new Exception($"ListItem {_listItemName}_{OrdinalNumber} is not visible.");
             }
+        }
+
+        public ILocator GetItemLocatorByOrdinalNumber(int ordinalNumber)
+        {
+            return _listItemLocator.Nth(ordinalNumber);
         }
     }
 }
