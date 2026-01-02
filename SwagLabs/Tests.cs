@@ -40,5 +40,99 @@ namespace SwagLabs
             await checkoutCompletePage.AssertThankYouMessageAsync("Thank you for your order!");
             productsPage = await checkoutCompletePage.ClickBackHomeAsync();
         }
+
+        [Test]
+        public async Task WrongPasswordLogin()
+        {
+            using var playwright = await Microsoft.Playwright.Playwright.CreateAsync();
+            await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = false });
+            var page = await browser.NewPageAsync();
+            await page.GotoAsync("https://www.saucedemo.com/");
+
+            LoginPage loginPage = await LoginPage.InitAsync(page);
+            loginPage = await loginPage.LoginWithInvalidCredentialsAsync("standard_user", "wrong_password");
+        }
+
+        [TestCase("standard_user")]
+        [TestCase("locked_out_user")]
+        [TestCase("problem_user")]
+        [TestCase("performance_glitch_user")]
+        [TestCase("error_user")]
+        [TestCase("visual_user")]
+        public async Task SortProducts(string login)
+        {
+            using var playwright = await Microsoft.Playwright.Playwright.CreateAsync();
+            await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = false });
+            var page = await browser.NewPageAsync();
+            await page.GotoAsync("https://www.saucedemo.com/");
+
+            LoginPage loginPage = await LoginPage.InitAsync(page);
+            ProductsPage productsPage = await loginPage.LoginAsync(login, "secret_sauce");
+            await productsPage.AssertProductsCountAsync(6);
+            await productsPage.SelectSortOptionAsync("Name (Z to A)");
+            await productsPage.AssertProductByOrdinalNumberAsync(0, "Test.allTheThings() T-Shirt (Red)", "$15.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(1, "Sauce Labs Onesie", "$7.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(2, "Sauce Labs Fleece Jacket", "$49.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(3, "Sauce Labs Bolt T-Shirt", "$15.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(4, "Sauce Labs Bike Light", "$9.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(5, "Sauce Labs Backpack", "$29.99");
+            await productsPage.SelectSortOptionAsync("Price (low to high)");
+            await productsPage.AssertProductByOrdinalNumberAsync(0, "Sauce Labs Onesie", "$7.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(1, "Sauce Labs Bike Light", "$9.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(2, "Sauce Labs Bolt T-Shirt", "$15.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(3, "Test.allTheThings() T-Shirt (Red)", "$15.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(4, "Sauce Labs Backpack", "$29.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(5, "Sauce Labs Fleece Jacket", "$49.99");
+            await productsPage.SelectSortOptionAsync("Price (high to low)");
+            await productsPage.AssertProductByOrdinalNumberAsync(0, "Sauce Labs Fleece Jacket", "$49.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(1, "Sauce Labs Backpack", "$29.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(2, "Sauce Labs Bolt T-Shirt", "$15.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(3, "Test.allTheThings() T-Shirt (Red)", "$15.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(4, "Sauce Labs Bike Light", "$9.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(5, "Sauce Labs Onesie", "$7.99");
+            await productsPage.SelectSortOptionAsync("Name (A to Z)");
+            await productsPage.AssertProductByOrdinalNumberAsync(0, "Sauce Labs Backpack", "$29.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(1, "Sauce Labs Bike Light", "$9.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(2, "Sauce Labs Bolt T-Shirt", "$15.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(3, "Sauce Labs Fleece Jacket", "$49.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(4, "Sauce Labs Onesie", "$7.99");
+            await productsPage.AssertProductByOrdinalNumberAsync(5, "Test.allTheThings() T-Shirt (Red)", "$15.99");
+        }
+
+        [TestCase("standard_user")]
+        [TestCase("locked_out_user")]
+        [TestCase("problem_user")]
+        [TestCase("performance_glitch_user")]
+        [TestCase("error_user")]
+        [TestCase("visual_user")]
+        public async Task SellAllItems(string login)
+        {
+            using var playwright = await Microsoft.Playwright.Playwright.CreateAsync();
+            await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = false });
+            var page = await browser.NewPageAsync();
+            await page.GotoAsync("https://www.saucedemo.com/");
+
+            LoginPage loginPage = await LoginPage.InitAsync(page);
+            ProductsPage productsPage = await loginPage.LoginAsync(login, "secret_sauce");
+            await productsPage.AssertProductsCountAsync(6);
+            for (int i = 0; i < 6; i++)
+            {
+                await productsPage.ClickOnProductByOrdinalNumberAsync(i);
+            }
+            CartPage cartPage = await productsPage.ClickOnCartButtonAsync();
+            await cartPage.AssertCartItemsCountAsync(6);
+            CheckoutPage checkoutPage = await cartPage.ClickCheckoutAsync();
+            await checkoutPage.FillCheckoutInformationAsync("John", "Doe", "12345");
+            CheckoutOverviewPage checkoutOverviewPage = await checkoutPage.ClickContinueAsync();
+            await checkoutOverviewPage.AssertOverviewItemsCountAsync(6);
+            await checkoutOverviewPage.AssertPaymentInformationAsync("SauceCard #31337");
+            await checkoutOverviewPage.AssertShippingInformationAsync("Free Pony Express Delivery!");
+            await checkoutOverviewPage.AssertSummarySubtotalAsync("Item total: $129.94");
+            await checkoutOverviewPage.AssertSummaryTaxAsync("Tax: $10.40");
+            await checkoutOverviewPage.AssertSummaryTotalAsync("Total: $140.34");
+            CheckoutCompletePage checkoutCompletePage = await checkoutOverviewPage.ClickFinishAsync();
+            await checkoutCompletePage.AssertThankYouMessageAsync("Thank you for your order!");
+            productsPage = await checkoutCompletePage.ClickBackHomeAsync();
+        }
     }
 }

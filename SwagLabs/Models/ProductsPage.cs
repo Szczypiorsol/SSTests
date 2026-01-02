@@ -38,15 +38,10 @@ namespace SwagLabs.Models
             await _productsList.AssertItemCountAsync(ExpectedCount);
         }
 
-        public async Task AssertProductNameByOrdinalNumberAsync(int ordinalNumber, string ExpectedProductName)
+        public async Task AssertProductByOrdinalNumberAsync(int ordinalNumber, string ExpectedProductName, string ExpectedPrice)
         {
             EnsureInitialized();
             await _productsList.AssertItemElementTextAsync(ExpectedProductName, ordinalNumber, GetBy.CssSelector, "div.inventory_item_name ");
-        }
-
-        public async Task AssertPriceByOrdinalNumberAsync(int ordinalNumber, string ExpectedPrice)
-        {
-            EnsureInitialized();
             await _productsList.AssertItemElementTextAsync(ExpectedPrice, ordinalNumber, GetBy.CssSelector, "div.inventory_item_price");
         }
 
