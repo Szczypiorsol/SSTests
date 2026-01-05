@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "Playwright": {
+      "commandName": "Project"
+    },
+    "Playwright-Debug": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "PWDEBUG": "1"
+      }
+    }
+  }
+}

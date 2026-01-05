@@ -1,10 +1,11 @@
-﻿using SwagLabs.Models;
+﻿using Microsoft.Playwright;
+using SwagLabs.Models;
 
 namespace SwagLabs
 {
     [Parallelizable(ParallelScope.Self)]
     [TestFixture]
-    public class Tests : PageTest
+    public class Tests : BaseTest
     {
         [TestCase("standard_user")]
         [TestCase("locked_out_user")]
@@ -14,9 +15,9 @@ namespace SwagLabs
         [TestCase("visual_user")]
         public async Task SellItemPositivePath(string login)
         {
-            await Page.GotoAsync("https://www.saucedemo.com/");
+            await _page.GotoAsync("https://www.saucedemo.com/");
 
-            LoginPage loginPage = await LoginPage.InitAsync(Page);
+            LoginPage loginPage = await LoginPage.InitAsync(_page);
             ProductsPage productsPage = await loginPage.LoginAsync(login, "secret_sauce");
             await productsPage.ClickOnProductByOrdinalNumberAsync(1);
             CartPage cartPage = await productsPage.ClickOnCartButtonAsync();
@@ -40,9 +41,9 @@ namespace SwagLabs
         [Test]
         public async Task WrongPasswordLogin()
         {
-            await Page.GotoAsync("https://www.saucedemo.com/");
+            await _page.GotoAsync("https://www.saucedemo.com/");
 
-            LoginPage loginPage = await LoginPage.InitAsync(Page);
+            LoginPage loginPage = await LoginPage.InitAsync(_page);
             _ = await loginPage.LoginWithInvalidCredentialsAsync("standard_user", "wrong_password");
         }
 
@@ -54,9 +55,9 @@ namespace SwagLabs
         [TestCase("visual_user")]
         public async Task SortProducts(string login)
         {
-            await Page.GotoAsync("https://www.saucedemo.com/");
+            await _page.GotoAsync("https://www.saucedemo.com/");
 
-            LoginPage loginPage = await LoginPage.InitAsync(Page);
+            LoginPage loginPage = await LoginPage.InitAsync(_page);
             ProductsPage productsPage = await loginPage.LoginAsync(login, "secret_sauce");
             await productsPage.AssertProductsCountAsync(6);
             await productsPage.SelectSortOptionAsync("Name (Z to A)");
@@ -97,9 +98,9 @@ namespace SwagLabs
         [TestCase("visual_user")]
         public async Task SellAllItems(string login)
         {
-            await Page.GotoAsync("https://www.saucedemo.com/");
+            await _page.GotoAsync("https://www.saucedemo.com/");
 
-            LoginPage loginPage = await LoginPage.InitAsync(Page);
+            LoginPage loginPage = await LoginPage.InitAsync(_page);
             ProductsPage productsPage = await loginPage.LoginAsync(login, "secret_sauce");
             await productsPage.AssertProductsCountAsync(6);
             for (int i = 0; i < 6; i++)
