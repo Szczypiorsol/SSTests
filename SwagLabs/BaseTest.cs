@@ -8,9 +8,11 @@ namespace SwagLabs
 {
     public class BaseTest : PageTest
     {
-        protected IPage? _page;
+        private IPage? _page;
         private IPlaywright? _playwright;
         private IBrowser? _browser;
+
+        protected IPage PageInstance => _page ?? Page;
 
         [OneTimeSetUp]
         public async Task OneTimeSetup()
@@ -20,10 +22,6 @@ namespace SwagLabs
                 _playwright = await Microsoft.Playwright.Playwright.CreateAsync();
                 _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = false });
                 _page = await _browser.NewPageAsync();
-            }
-            else
-            {
-                _page = Page;
             }
         }
 

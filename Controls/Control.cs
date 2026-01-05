@@ -44,8 +44,9 @@ namespace Controls
         {
            if (_locator.IsVisibleAsync().GetAwaiter().GetResult() != true)
             {
-                string TypeName = this.GetType().Name;
-                throw new Exception($"{TypeName} {_name} is not visible.");
+                await Assertions.Expect(_locator).ToBeVisibleAsync();
+                //string TypeName = this.GetType().Name;
+                //throw new Exception($"{TypeName} {_name} is not visible.");
             }
         }
 

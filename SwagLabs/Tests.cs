@@ -15,9 +15,9 @@ namespace SwagLabs
         [TestCase("visual_user")]
         public async Task SellItemPositivePath(string login)
         {
-            await _page.GotoAsync("https://www.saucedemo.com/");
+            await PageInstance.GotoAsync("https://www.saucedemo.com/");
 
-            LoginPage loginPage = await LoginPage.InitAsync(_page);
+            LoginPage loginPage = await LoginPage.InitAsync(PageInstance);
             ProductsPage productsPage = await loginPage.LoginAsync(login, "secret_sauce");
             await productsPage.ClickOnProductByOrdinalNumberAsync(1);
             CartPage cartPage = await productsPage.ClickOnCartButtonAsync();
@@ -41,9 +41,9 @@ namespace SwagLabs
         [Test]
         public async Task WrongPasswordLogin()
         {
-            await _page.GotoAsync("https://www.saucedemo.com/");
+            await PageInstance.GotoAsync("https://www.saucedemo.com/");
 
-            LoginPage loginPage = await LoginPage.InitAsync(_page);
+            LoginPage loginPage = await LoginPage.InitAsync(PageInstance);
             _ = await loginPage.LoginWithInvalidCredentialsAsync("standard_user", "wrong_password");
         }
 
@@ -55,9 +55,9 @@ namespace SwagLabs
         [TestCase("visual_user")]
         public async Task SortProducts(string login)
         {
-            await _page.GotoAsync("https://www.saucedemo.com/");
+            await PageInstance.GotoAsync("https://www.saucedemo.com/");
 
-            LoginPage loginPage = await LoginPage.InitAsync(_page);
+            LoginPage loginPage = await LoginPage.InitAsync(PageInstance);
             ProductsPage productsPage = await loginPage.LoginAsync(login, "secret_sauce");
             await productsPage.AssertProductsCountAsync(6);
             await productsPage.SelectSortOptionAsync("Name (Z to A)");
@@ -98,9 +98,9 @@ namespace SwagLabs
         [TestCase("visual_user")]
         public async Task SellAllItems(string login)
         {
-            await _page.GotoAsync("https://www.saucedemo.com/");
+            await PageInstance.GotoAsync("https://www.saucedemo.com/");
 
-            LoginPage loginPage = await LoginPage.InitAsync(_page);
+            LoginPage loginPage = await LoginPage.InitAsync(PageInstance);
             ProductsPage productsPage = await loginPage.LoginAsync(login, "secret_sauce");
             await productsPage.AssertProductsCountAsync(6);
             for (int i = 0; i < 6; i++)
