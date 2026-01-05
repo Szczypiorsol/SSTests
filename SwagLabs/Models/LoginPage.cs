@@ -19,9 +19,17 @@ namespace SwagLabs.Models
 
         public override async Task InitAsync()
         {
-            await _usernameTextBox.CheckIsVisibleAsync();
-            await _passwordTextBox.CheckIsVisibleAsync();
-            await _loginButton.CheckIsVisibleAsync();
+            try
+            {
+                await _usernameTextBox.CheckIsVisibleAsync();
+                await _passwordTextBox.CheckIsVisibleAsync();
+                await _loginButton.CheckIsVisibleAsync();
+            }
+            catch (PlaywrightException ex)
+            {
+                throw new Exception("Login Page did not load correctly.", ex);
+            }
+
             _isInitialized = true;
         }
 

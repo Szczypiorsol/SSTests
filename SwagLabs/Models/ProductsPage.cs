@@ -19,9 +19,17 @@ namespace SwagLabs.Models
 
         public override async Task InitAsync()
         {
-            await _cartButton.CheckIsVisibleAsync();
-            await _sortComboBox.CheckIsVisibleAsync();
-            await _productsList.CheckIsVisibleAsync();
+            try
+            {
+                await _cartButton.CheckIsVisibleAsync();
+                await _sortComboBox.CheckIsVisibleAsync();
+                await _productsList.CheckIsVisibleAsync();
+            }
+            catch (PlaywrightException ex)
+            {
+                throw new Exception("Products Page did not load correctly.", ex);
+            }
+
             _isInitialized = true;
         }
 

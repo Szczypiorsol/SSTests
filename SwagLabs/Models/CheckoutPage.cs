@@ -23,11 +23,19 @@ namespace SwagLabs.Models
 
         public override async Task InitAsync()
         {
-            await _firstNameTextBox.CheckIsVisibleAsync();
-            await _lastNameTextBox.CheckIsVisibleAsync();
-            await _postalCodeTextBox.CheckIsVisibleAsync();
-            await _cancelButton.CheckIsVisibleAsync();
-            await _continueButton.CheckIsVisibleAsync();
+            try
+            {
+                await _firstNameTextBox.CheckIsVisibleAsync();
+                await _lastNameTextBox.CheckIsVisibleAsync();
+                await _postalCodeTextBox.CheckIsVisibleAsync();
+                await _cancelButton.CheckIsVisibleAsync();
+                await _continueButton.CheckIsVisibleAsync();
+            }
+            catch (PlaywrightException ex)
+            {
+                throw new Exception("Checkout Page did not load correctly.", ex);
+            }
+
             _isInitialized = true;
         }
 
