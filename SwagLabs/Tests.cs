@@ -7,18 +7,43 @@ namespace SwagLabs
     [TestFixture]
     public class Tests : BaseTest
     {
-        [TestCase("standard_user")]
-        [TestCase("locked_out_user")]
-        [TestCase("problem_user")]
-        [TestCase("performance_glitch_user")]
-        [TestCase("error_user")]
-        [TestCase("visual_user")]
-        public async Task SellItemPositivePath(string login)
+        [Test]
+        public async Task When_UserIsLockedOut_Should_DisplayErrorMessage()
         {
             await PageInstance.GotoAsync("https://www.saucedemo.com/");
-
             LoginPage loginPage = await LoginPage.InitAsync(PageInstance);
-            ProductsPage productsPage = await loginPage.LoginAsync(login, "secret_sauce");
+
+            loginPage = await loginPage.LoginWithInvalidCredentialsAsync(Users["LockedOutUser"], "secret_sauce");
+            await loginPage.AssertErrorMessageAsync("Epic sadface: Sorry, this user has been locked out.");
+        }
+
+        [Test]
+        public async Task When_UserEntersWrongPassword_Should_DisplayInvalidCredentialsMessage()
+        {
+            await PageInstance.GotoAsync("https://www.saucedemo.com/");
+            LoginPage loginPage = await LoginPage.InitAsync(PageInstance);
+            
+            loginPage = await loginPage.LoginWithInvalidCredentialsAsync(UserLogin, "wrong_password");
+            await loginPage.AssertErrorMessageAsync("Epic sadface: Username and password do not match any user in this service");
+        }
+
+        [Test]
+        public async Task When_UserEntersWrongLogin_Should_DisplayInvalidCredentialsMessage()
+        {
+            await PageInstance.GotoAsync("https://www.saucedemo.com/");
+            LoginPage loginPage = await LoginPage.InitAsync(PageInstance);
+            
+            loginPage = await loginPage.LoginWithInvalidCredentialsAsync("admin_user", "secret_sauce");
+            await loginPage.AssertErrorMessageAsync("Epic sadface: Username and password do not match any user in this service");
+        }
+
+        [Test]
+        public async Task When_SingleProductIsBought_Should_ValidateDetailsAndConfirmOrder()
+        {
+            await PageInstance.GotoAsync("https://www.saucedemo.com/");
+            LoginPage loginPage = await LoginPage.InitAsync(PageInstance);
+
+            ProductsPage productsPage = await loginPage.LoginAsync(UserLogin, "secret_sauce");
             await productsPage.ClickOnProductByOrdinalNumberAsync(1);
             CartPage cartPage = await productsPage.ClickOnCartButtonAsync();
             await cartPage.AssertCartItemsCountAsync(1);
@@ -39,27 +64,12 @@ namespace SwagLabs
         }
 
         [Test]
-        public async Task WrongPasswordLogin()
+        public async Task When_UserSortsProductsByNameAndPrice_Should_DisplayCorrectOrder()
         {
             await PageInstance.GotoAsync("https://www.saucedemo.com/");
 
             LoginPage loginPage = await LoginPage.InitAsync(PageInstance);
-            loginPage = await loginPage.LoginWithInvalidCredentialsAsync("standard_user", "wrong_password");
-            await loginPage.AssertErrorMessageAsync("Epic sadface: Username and password do not match any user in this service");
-        }
-
-        [TestCase("standard_user")]
-        [TestCase("locked_out_user")]
-        [TestCase("problem_user")]
-        [TestCase("performance_glitch_user")]
-        [TestCase("error_user")]
-        [TestCase("visual_user")]
-        public async Task SortProducts(string login)
-        {
-            await PageInstance.GotoAsync("https://www.saucedemo.com/");
-
-            LoginPage loginPage = await LoginPage.InitAsync(PageInstance);
-            ProductsPage productsPage = await loginPage.LoginAsync(login, "secret_sauce");
+            ProductsPage productsPage = await loginPage.LoginAsync(UserLogin, "secret_sauce");
             await productsPage.AssertProductsCountAsync(6);
             await productsPage.SelectSortOptionAsync("Name (Z to A)");
             await productsPage.AssertProductByOrdinalNumberAsync(0, "Test.allTheThings() T-Shirt (Red)", "$15.99");
@@ -91,18 +101,13 @@ namespace SwagLabs
             await productsPage.AssertProductByOrdinalNumberAsync(5, "Test.allTheThings() T-Shirt (Red)", "$15.99");
         }
 
-        [TestCase("standard_user")]
-        [TestCase("locked_out_user")]
-        [TestCase("problem_user")]
-        [TestCase("performance_glitch_user")]
-        [TestCase("error_user")]
-        [TestCase("visual_user")]
-        public async Task SellAllItems(string login)
+        [Test]
+        public async Task When_SixProductsAreOrdered_Should_ValidateTotalsAndConfirmOrder()
         {
             await PageInstance.GotoAsync("https://www.saucedemo.com/");
 
             LoginPage loginPage = await LoginPage.InitAsync(PageInstance);
-            ProductsPage productsPage = await loginPage.LoginAsync(login, "secret_sauce");
+            ProductsPage productsPage = await loginPage.LoginAsync(UserLogin, "secret_sauce");
             await productsPage.AssertProductsCountAsync(6);
             for (int i = 0; i < 6; i++)
             {
