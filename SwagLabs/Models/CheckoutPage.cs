@@ -12,7 +12,7 @@ namespace SwagLabs.Models
         private readonly Button _cancelButton;
         private readonly Button _continueButton;
 
-        public CheckoutPage(IPage page) : base(page, "[CheckoutPage]")
+        public CheckoutPage(IPage page, int defaultTimeout = 300) : base(page, "[CheckoutPage]", defaultTimeout)
         {
             _firstNameTextBox = new TextBox(_page, GetBy.Placeholder, "First Name", $"{_pageName}_[FirstNameTextBox]");
             _lastNameTextBox = new TextBox(_page, GetBy.Placeholder, "Last Name", $"{_pageName}_[LastNameTextBox]");
@@ -35,6 +35,10 @@ namespace SwagLabs.Models
             {
                 throw new AssertionException($"{_pageName} did not load correctly.", ex);
             }
+            catch (TimeoutException ex)
+            {
+                throw new AssertionException($"{_pageName} did not load within {_defaultTimeout} miliseconds.", ex);
+            }
 
             _isInitialized = true;
         }
@@ -46,25 +50,40 @@ namespace SwagLabs.Models
             return checkoutPage;
         }
 
-        public async Task FillCheckoutInformationAsync(string firstName, string lastName, string postalCode)
+        public async Task<CheckoutPage> FillCheckoutInformationAsync(string firstName, string lastName, string postalCode)
         {
             EnsureInitialized();
             await _firstNameTextBox.EnterTextAsync(firstName);
             await _lastNameTextBox.EnterTextAsync(lastName);
             await _postalCodeTextBox.EnterTextAsync(postalCode);
+            return await InitAsync(_page);
         }
 
         public async Task<CheckoutOverviewPage> ClickContinueAsync()
         {
             EnsureInitialized();
-            await _continueButton.ClickAsync();
+            try
+            {
+                await _continueButton.ClickAsync();
+            }
+            catch (TimeoutException ex)
+            {
+                throw new AssertionException($"[{_pageName}] Failed to click continue button within {_defaultTimeout} miliseconds.", ex);
+            }
             return await CheckoutOverviewPage.InitAsync(_page);
         }
 
         public async Task<CartPage> ClickCancelAsync()
         {
             EnsureInitialized();
-            await _cancelButton.ClickAsync();
+            try
+            {
+                await _cancelButton.ClickAsync();
+            }
+            catch (TimeoutException ex)
+            {
+                throw new AssertionException($"[{_pageName}] Failed to click cancel button within {_defaultTimeout} miliseconds.", ex);
+            }
             return await CartPage.InitAsync(_page);
         }
     }

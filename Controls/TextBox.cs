@@ -23,5 +23,10 @@ namespace Controls
                 throw new AssertionException($"TextBox {_description} should have text '{expectedText}', but has '{actualText}'", ex);
             }
         }
+
+        public async Task<string> GetTextAsync()
+        {
+            return await _locator.InnerTextAsync();
+        }
     }
 }

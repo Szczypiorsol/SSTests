@@ -2,11 +2,20 @@
 
 namespace SwagLabs.Models
 {
-    public abstract class BasePage(IPage page, string pageName)
+    public abstract class BasePage
     {
-        protected readonly IPage _page = page ?? throw new ArgumentNullException(nameof(page));
+        protected readonly IPage _page;
         protected bool _isInitialized = false;
-        protected readonly string _pageName = pageName;
+        protected readonly string _pageName;
+        protected readonly int _defaultTimeout;
+
+        public BasePage(IPage page, string pageName, int defaultTimeout = 300)
+        {
+            _page = page ?? throw new ArgumentNullException(nameof(page));
+            _pageName = pageName;
+            _defaultTimeout = defaultTimeout;
+            _page.SetDefaultTimeout(_defaultTimeout);
+        }
 
         public abstract Task InitAsync();
 

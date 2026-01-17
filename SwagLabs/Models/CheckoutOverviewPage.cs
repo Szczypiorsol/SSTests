@@ -15,7 +15,7 @@ namespace SwagLabs.Models
         private readonly Button _cancelButton;
         private readonly Button _finishButton;
 
-        public CheckoutOverviewPage(IPage page) : base(page, "[CheckoutOverviewPage]")
+        public CheckoutOverviewPage(IPage page, int defaultTimeout = 300) : base(page, "[CheckoutOverviewPage]", defaultTimeout)
         {
             _overviewItemList = new ListControl(
                 _page, 
@@ -61,6 +61,10 @@ namespace SwagLabs.Models
             catch (Exception ex) when (ex is AssertionException || ex is PlaywrightException)
             {
                 throw new AssertionException($"{_pageName} did not load correctly.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                throw new AssertionException($"{_pageName} did not load within {_defaultTimeout} miliseconds.", ex);
             }
 
             _isInitialized = true;
@@ -119,14 +123,28 @@ namespace SwagLabs.Models
         public async Task<CheckoutPage> ClickCancelAsync()
         {
             EnsureInitialized();
-            await _cancelButton.ClickAsync();
+            try
+            {
+                await _cancelButton.ClickAsync();
+            }
+            catch (TimeoutException ex)
+            {
+                throw new AssertionException($"[{_pageName}] Failed to click cancel button within {_defaultTimeout} miliseconds.", ex);
+            }
             return await CheckoutPage.InitAsync(_page);
         }
 
         public async Task<CheckoutCompletePage> ClickFinishAsync()
         {
             EnsureInitialized();
-            await _finishButton.ClickAsync();
+            try
+            {
+                await _finishButton.ClickAsync();
+            }
+            catch (TimeoutException ex)
+            {
+                throw new AssertionException($"[{_pageName}] Failed to click finish button within {_defaultTimeout} miliseconds.", ex);
+            }
             return await CheckoutCompletePage.InitAsync(_page);
         }
     }

@@ -9,7 +9,7 @@ namespace SwagLabs.Models
         private readonly TextBox _thankYouMessageTextBox;
         private readonly Button _backHomeButton;
 
-        public CheckoutCompletePage(IPage page) : base(page, "[CheckoutCompletePage]")
+        public CheckoutCompletePage(IPage page, int defaultTimeout = 300) : base(page, "[CheckoutCompletePage]", defaultTimeout)
         {
             _thankYouMessageTextBox = new TextBox(_page, GetBy.CssSelector, "h2.complete-header", $"{_pageName}_[ThankYouMessageTextBox]");
             _backHomeButton = new Button(_page, GetBy.Role, "Back Home", $"{_pageName}_[BackHomeButton]");
@@ -25,6 +25,10 @@ namespace SwagLabs.Models
             catch (Exception ex) when (ex is AssertionException || ex is PlaywrightException)
             {
                 throw new AssertionException($"{_pageName} did not load correctly.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                throw new AssertionException($"{_pageName} did not load within {_defaultTimeout} miliseconds.", ex);
             }
 
             _isInitialized = true;
@@ -46,7 +50,14 @@ namespace SwagLabs.Models
         public async Task<ProductsPage> ClickBackHomeAsync()
         {
             EnsureInitialized();
-            await _backHomeButton.ClickAsync();
+            try
+            {
+                await _backHomeButton.ClickAsync();
+            }
+            catch (TimeoutException ex)
+            {
+                throw new AssertionException($"[{_pageName}] Failed to click back home button within {_defaultTimeout} miliseconds.", ex);
+            }
             return await ProductsPage.InitAsync(_page);
         }
     }

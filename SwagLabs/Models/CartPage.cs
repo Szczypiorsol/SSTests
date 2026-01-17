@@ -10,15 +10,15 @@ namespace SwagLabs.Models
         private readonly Button _continueShoppingButton;
         private readonly Button _checkoutButton;
 
-        public CartPage(IPage page) : base(page, "[CartPage]")
+        public CartPage(IPage page, int defaultTimeout = 300) : base(page, "[CartPage]", defaultTimeout)
         {
             _cartList = new ListControl(
-                page: _page, 
-                getByList: GetBy.CssSelector, 
-                listName: "div.cart_list", 
-                listDescription: $"{_pageName}_[ProductsList]", 
-                getByItem: GetBy.CssSelector, 
-                itemName: "div.cart_item", 
+                page: _page,
+                getByList: GetBy.CssSelector,
+                listName: "div.cart_list",
+                listDescription: $"{_pageName}_[ProductsList]",
+                getByItem: GetBy.CssSelector,
+                itemName: "div.cart_item",
                 listItemDescription: $"{_pageName}_[Product]"
                 );
             _continueShoppingButton = new Button(_page, GetBy.Role, "Continue Shopping", $"{_pageName}_[ContinueShoppingButton]");
@@ -36,6 +36,10 @@ namespace SwagLabs.Models
             catch (Exception ex) when (ex is AssertionException || ex is PlaywrightException)
             {
                 throw new AssertionException($"{_pageName} did not load correctly.", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                throw new AssertionException($"{_pageName} did not load within {_defaultTimeout} miliseconds.", ex);
             }
 
             _isInitialized = true;
@@ -67,22 +71,45 @@ namespace SwagLabs.Models
                 );
         }
 
-        public async Task RemoveCartItemAsync(int ordinalNumber)
+        public async Task<CartPage> RemoveCartItemAsync(int ordinalNumber)
         {
             EnsureInitialized();
-            await _cartList.ClickOnItemElementAsync(ordinalNumber, "button");
+            try
+            {
+                await _cartList.ClickOnItemElementAsync(ordinalNumber, "button");
+            }
+            catch (TimeoutException ex)
+            {
+                throw new AssertionException($"[{_pageName}] Failed to remove cart item at ordinal number {ordinalNumber} within {_defaultTimeout} miliseconds.", ex);
+            }
+            return await InitAsync(_page);
         }
 
-        public async Task ClickContinueShoppingAsync()
+        public async Task<ProductsPage> ClickContinueShoppingAsync()
         {
             EnsureInitialized();
-            await _continueShoppingButton.ClickAsync();
+            try
+            {
+                await _continueShoppingButton.ClickAsync();
+            }
+            catch (TimeoutException ex)
+            {
+                throw new AssertionException($"[{_pageName}] Failed to click Continue Shopping button within {_defaultTimeout} miliseconds.", ex);
+            }
+            return await ProductsPage.InitAsync(_page);
         }
 
         public async Task<CheckoutPage> ClickCheckoutAsync()
         {
             EnsureInitialized();
-            await _checkoutButton.ClickAsync();
+            try
+            {
+                await _checkoutButton.ClickAsync();
+            }
+            catch (TimeoutException ex)
+            {
+                throw new AssertionException($"[{_pageName}] Failed to click Checkout button within {_defaultTimeout} miliseconds.", ex);
+            }
             return await CheckoutPage.InitAsync(_page);
         }
     }

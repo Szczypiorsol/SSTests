@@ -44,7 +44,8 @@ namespace SwagLabs
             await PageInstance.GotoAsync("https://www.saucedemo.com/");
 
             LoginPage loginPage = await LoginPage.InitAsync(PageInstance);
-            _ = await loginPage.LoginWithInvalidCredentialsAsync("standard_user", "wrong_password");
+            loginPage = await loginPage.LoginWithInvalidCredentialsAsync("standard_user", "wrong_password");
+            await loginPage.AssertErrorMessageAsync("Epic sadface: Username and password do not match any user in this service");
         }
 
         [TestCase("standard_user")]
@@ -122,5 +123,7 @@ namespace SwagLabs
             await checkoutCompletePage.AssertThankYouMessageAsync("Thank you for your order!");
             _ = await checkoutCompletePage.ClickBackHomeAsync();
         }
+
+
     }
 }
