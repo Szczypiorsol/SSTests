@@ -2,7 +2,7 @@
 using Microsoft.Playwright;
 using static Controls.Control;
 
-namespace SwagLabs.Models
+namespace SwagLabs.Pages
 {
     public abstract class BasePage
     {

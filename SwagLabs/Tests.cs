@@ -1,5 +1,5 @@
 ﻿using Microsoft.Playwright;
-using SwagLabs.Models;
+using SwagLabs.Pages;
 
 namespace SwagLabs
 {

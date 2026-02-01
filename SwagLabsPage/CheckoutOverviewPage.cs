@@ -1,8 +1,9 @@
 ﻿using Controls;
 using Microsoft.Playwright;
+using NUnit.Framework;
 using static Controls.Control;
 
-namespace SwagLabs.Models
+namespace SwagLabs.Pages
 {
     public class CheckoutOverviewPage : BasePage
     {

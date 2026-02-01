@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Controls\Controls.csproj" />
+    <ProjectReference Include="..\SwagLabsPage\SwagLabs.Pages.csproj" />
   </ItemGroup>
 
   <ItemGroup>

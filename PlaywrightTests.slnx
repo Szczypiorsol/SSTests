@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="Controls/Controls.csproj" />
   <Project Path="SwagLabs/SwagLabs.csproj" />
+  <Project Path="SwagLabsPage/SwagLabs.Pages.csproj" Id="56f498a9-6e78-4eb5-9e7e-fc3e2d6fac07" />
 </Solution>
