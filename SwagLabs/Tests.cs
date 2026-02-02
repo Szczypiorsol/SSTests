@@ -373,7 +373,7 @@ namespace SwagLabs
         [Test]
         public async Task T13_When_UnauthenticatedUserAccessesCheckout_ShouldBeRedirectedToLogin()
         {
-            LoginPage loginPage = await NavigateToLoginPageAsync();
+            LoginPage loginPage = await NavigateToLoginPageAsync("https://www.saucedemo.com/checkout-step-two.html");
             await Assertions.Expect(loginPage.ErrorMessageTextBox.Locator)
                 .ToHaveTextAsync("Epic sadface: You can only access '/checkout-step-two.html' when you are logged in.");
         }
@@ -383,56 +383,68 @@ namespace SwagLabs
         {
             LoginPage loginPage = await NavigateToLoginPageAsync();
 
-            IBrowserContext BrowserContext2 = await Browser.NewContextAsync();
-            IPage pageInstance2 = await BrowserContext2.NewPageAsync();
-            await pageInstance2.GotoAsync("https://www.saucedemo.com/");
-            LoginPage loginPage2 = await LoginPage.InitAsync(pageInstance2);
-            string userToLogin = UserLogin == Users["StandardUser"] ? Users["VisualUser"] : Users["StandardUser"];
+            IBrowserContext? browserContext2 = null;
             
-            ProductsPage productsPage = await loginPage.LoginAsync(UserLogin, "secret_sauce");
-            ProductsPage productsPage2 = await loginPage2.LoginAsync(userToLogin, "secret_sauce");
-            productsPage = await productsPage.ClickOnProductByOrdinalNumberAsync(1);
-            productsPage2 = await productsPage2.ClickOnProductByOrdinalNumberAsync(0);
+            try
+            {
+                browserContext2 = await Browser.NewContextAsync();
+                IPage pageInstance2 = await browserContext2.NewPageAsync();
+                await pageInstance2.GotoAsync("https://www.saucedemo.com/");
+                LoginPage loginPage2 = await LoginPage.InitAsync(pageInstance2);
+                string userToLogin = UserLogin == Users["StandardUser"] ? Users["VisualUser"] : Users["StandardUser"];
+            
+                ProductsPage productsPage = await loginPage.LoginAsync(UserLogin, "secret_sauce");
+                ProductsPage productsPage2 = await loginPage2.LoginAsync(userToLogin, "secret_sauce");
+                productsPage = await productsPage.ClickOnProductByOrdinalNumberAsync(1);
+                productsPage2 = await productsPage2.ClickOnProductByOrdinalNumberAsync(0);
          
-            CartPage cartPage = await productsPage.ClickOnCartButtonAsync();
-            CartPage cartPage2 = await productsPage2.ClickOnCartButtonAsync();
-            await Assertions.Expect(cartPage.ProductsListControl.ItemsLocator).ToHaveCountAsync(1);
-            await Assertions.Expect(cartPage2.ProductsListControl.ItemsLocator).ToHaveCountAsync(1);
-            await Assertions.Expect(cartPage.GetProductNameLocator(0)).ToHaveTextAsync("Sauce Labs Bike Light");
-            await Assertions.Expect(cartPage2.GetProductNameLocator(0)).ToHaveTextAsync("Sauce Labs Backpack");
-            await Assertions.Expect(cartPage.GetProductPriceLocator(0)).ToHaveTextAsync("$9.99");
-            await Assertions.Expect(cartPage2.GetProductPriceLocator(0)).ToHaveTextAsync("$29.99");
+                CartPage cartPage = await productsPage.ClickOnCartButtonAsync();
+                CartPage cartPage2 = await productsPage2.ClickOnCartButtonAsync();
+                await Assertions.Expect(cartPage.ProductsListControl.ItemsLocator).ToHaveCountAsync(1);
+                await Assertions.Expect(cartPage2.ProductsListControl.ItemsLocator).ToHaveCountAsync(1);
+                await Assertions.Expect(cartPage.GetProductNameLocator(0)).ToHaveTextAsync("Sauce Labs Bike Light");
+                await Assertions.Expect(cartPage2.GetProductNameLocator(0)).ToHaveTextAsync("Sauce Labs Backpack");
+                await Assertions.Expect(cartPage.GetProductPriceLocator(0)).ToHaveTextAsync("$9.99");
+                await Assertions.Expect(cartPage2.GetProductPriceLocator(0)).ToHaveTextAsync("$29.99");
             
-            CheckoutPage checkoutPage = await cartPage.ClickCheckoutAsync();
-            CheckoutPage checkoutPage2 = await cartPage2.ClickCheckoutAsync();
-            checkoutPage = await checkoutPage.FillCheckoutInformationAsync("John", "Doe", "12345");
-            checkoutPage2 = await checkoutPage2.FillCheckoutInformationAsync("Jane", "Smith", "54321");
+                CheckoutPage checkoutPage = await cartPage.ClickCheckoutAsync();
+                CheckoutPage checkoutPage2 = await cartPage2.ClickCheckoutAsync();
+                checkoutPage = await checkoutPage.FillCheckoutInformationAsync("John", "Doe", "12345");
+                checkoutPage2 = await checkoutPage2.FillCheckoutInformationAsync("Jane", "Smith", "54321");
             
-            CheckoutOverviewPage checkoutOverviewPage = await checkoutPage.ClickContinueAsync();
-            CheckoutOverviewPage checkoutOverviewPage2 = await checkoutPage2.ClickContinueAsync();
-            await Assertions.Expect(checkoutOverviewPage.ProductsItemList.ItemsLocator).ToHaveCountAsync(1);
-            await Assertions.Expect(checkoutOverviewPage2.ProductsItemList.ItemsLocator).ToHaveCountAsync(1);
-            await Assertions.Expect(checkoutOverviewPage.GetProductNameLocator(0)).ToHaveTextAsync("Sauce Labs Bike Light");
-            await Assertions.Expect(checkoutOverviewPage2.GetProductNameLocator(0)).ToHaveTextAsync("Sauce Labs Backpack");
-            await Assertions.Expect(checkoutOverviewPage.GetProductPriceLocator(0)).ToHaveTextAsync("$9.99");
-            await Assertions.Expect(checkoutOverviewPage2.GetProductPriceLocator(0)).ToHaveTextAsync("$29.99");
-            await Assertions.Expect(checkoutOverviewPage.PaymentInformationTextBox.Locator).ToHaveTextAsync("SauceCard #31337");
-            await Assertions.Expect(checkoutOverviewPage2.PaymentInformationTextBox.Locator).ToHaveTextAsync("SauceCard #31337");
-            await Assertions.Expect(checkoutOverviewPage.ShippingInformationTextBox.Locator).ToHaveTextAsync("Free Pony Express Delivery!");
-            await Assertions.Expect(checkoutOverviewPage2.ShippingInformationTextBox.Locator).ToHaveTextAsync("Free Pony Express Delivery!");
-            await Assertions.Expect(checkoutOverviewPage.SummarySubtotalTextBox.Locator).ToHaveTextAsync("Item total: $9.99");
-            await Assertions.Expect(checkoutOverviewPage2.SummarySubtotalTextBox.Locator).ToHaveTextAsync("Item total: $29.99");
-            await Assertions.Expect(checkoutOverviewPage.SummaryTaxTextBox.Locator).ToHaveTextAsync("Tax: $0.80");
-            await Assertions.Expect(checkoutOverviewPage2.SummaryTaxTextBox.Locator).ToHaveTextAsync("Tax: $2.40");
-            await Assertions.Expect(checkoutOverviewPage.SummaryTotalTextBox.Locator).ToHaveTextAsync("Total: $10.79");
-            await Assertions.Expect(checkoutOverviewPage2.SummaryTotalTextBox.Locator).ToHaveTextAsync("Total: $32.39");
+                CheckoutOverviewPage checkoutOverviewPage = await checkoutPage.ClickContinueAsync();
+                CheckoutOverviewPage checkoutOverviewPage2 = await checkoutPage2.ClickContinueAsync();
+                await Assertions.Expect(checkoutOverviewPage.ProductsItemList.ItemsLocator).ToHaveCountAsync(1);
+                await Assertions.Expect(checkoutOverviewPage2.ProductsItemList.ItemsLocator).ToHaveCountAsync(1);
+                await Assertions.Expect(checkoutOverviewPage.GetProductNameLocator(0)).ToHaveTextAsync("Sauce Labs Bike Light");
+                await Assertions.Expect(checkoutOverviewPage2.GetProductNameLocator(0)).ToHaveTextAsync("Sauce Labs Backpack");
+                await Assertions.Expect(checkoutOverviewPage.GetProductPriceLocator(0)).ToHaveTextAsync("$9.99");
+                await Assertions.Expect(checkoutOverviewPage2.GetProductPriceLocator(0)).ToHaveTextAsync("$29.99");
+                await Assertions.Expect(checkoutOverviewPage.PaymentInformationTextBox.Locator).ToHaveTextAsync("SauceCard #31337");
+                await Assertions.Expect(checkoutOverviewPage2.PaymentInformationTextBox.Locator).ToHaveTextAsync("SauceCard #31337");
+                await Assertions.Expect(checkoutOverviewPage.ShippingInformationTextBox.Locator).ToHaveTextAsync("Free Pony Express Delivery!");
+                await Assertions.Expect(checkoutOverviewPage2.ShippingInformationTextBox.Locator).ToHaveTextAsync("Free Pony Express Delivery!");
+                await Assertions.Expect(checkoutOverviewPage.SummarySubtotalTextBox.Locator).ToHaveTextAsync("Item total: $9.99");
+                await Assertions.Expect(checkoutOverviewPage2.SummarySubtotalTextBox.Locator).ToHaveTextAsync("Item total: $29.99");
+                await Assertions.Expect(checkoutOverviewPage.SummaryTaxTextBox.Locator).ToHaveTextAsync("Tax: $0.80");
+                await Assertions.Expect(checkoutOverviewPage2.SummaryTaxTextBox.Locator).ToHaveTextAsync("Tax: $2.40");
+                await Assertions.Expect(checkoutOverviewPage.SummaryTotalTextBox.Locator).ToHaveTextAsync("Total: $10.79");
+                await Assertions.Expect(checkoutOverviewPage2.SummaryTotalTextBox.Locator).ToHaveTextAsync("Total: $32.39");
             
-            CheckoutCompletePage checkoutCompletePage = await checkoutOverviewPage.ClickFinishAsync();
-            CheckoutCompletePage checkoutCompletePage2 = await checkoutOverviewPage2.ClickFinishAsync();
-            await Assertions.Expect(checkoutCompletePage.ThankYouMessageTextBox.Locator).ToHaveTextAsync("Thank you for your order!");
-            await Assertions.Expect(checkoutCompletePage2.ThankYouMessageTextBox.Locator).ToHaveTextAsync("Thank you for your order!");
-            _ = await checkoutCompletePage.ClickBackHomeAsync();
-            _ = await checkoutCompletePage2.ClickBackHomeAsync();
+                CheckoutCompletePage checkoutCompletePage = await checkoutOverviewPage.ClickFinishAsync();
+                CheckoutCompletePage checkoutCompletePage2 = await checkoutOverviewPage2.ClickFinishAsync();
+                await Assertions.Expect(checkoutCompletePage.ThankYouMessageTextBox.Locator).ToHaveTextAsync("Thank you for your order!");
+                await Assertions.Expect(checkoutCompletePage2.ThankYouMessageTextBox.Locator).ToHaveTextAsync("Thank you for your order!");
+                _ = await checkoutCompletePage.ClickBackHomeAsync();
+                _ = await checkoutCompletePage2.ClickBackHomeAsync();
+            }
+            finally
+            {
+                if (browserContext2 != null)
+                {
+                    await browserContext2.CloseAsync();
+                }
+            }
         }
     }
 }

@@ -22,9 +22,9 @@ namespace SwagLabs
         protected IPage? PageInstance;
         protected string UserLogin;
 
-        protected async Task<LoginPage> NavigateToLoginPageAsync()
+        protected async Task<LoginPage> NavigateToLoginPageAsync(string url = "https://www.saucedemo.com/")
         {
-            await PageInstance.GotoAsync("https://www.saucedemo.com/");
+            await PageInstance.GotoAsync(url);
             return await LoginPage.InitAsync(PageInstance);
         }
 
@@ -35,6 +35,7 @@ namespace SwagLabs
             Browser = await PlaywrightInstance.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = !Debugger.IsAttached });
 
             UserLogin = Users["StandardUser"];
+            //Pozostałe loginy na potrzeby testów negatywnych
             //UserLogin = Users["LockedOutUser"];
             //UserLogin = Users["ProblemUser"];
             //UserLogin = Users["PerformanceGlitchUser"];
