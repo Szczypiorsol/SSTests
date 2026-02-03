@@ -1,6 +1,7 @@
 ﻿using Controls;
 using Microsoft.Playwright;
 using static Controls.Control;
+using Serilog;
 
 namespace SwagLabs.Pages
 {
@@ -16,7 +17,7 @@ namespace SwagLabs.Pages
         public TextBox ErrorMessageTextBox => _errorMessageTextBox;
         public Button LoginButton => _loginButton;
 
-        public LoginPage(IPage page) : base(page, "LoginPage")
+        public LoginPage(IPage page, ILogger logger) : base(page, "LoginPage", logger)
         {
             _usernameTextBox = new TextBox(_page, GetBy.Role, "Username");
             _passwordTextBox = new TextBox(_page, GetBy.Role, "Password");
@@ -26,36 +27,42 @@ namespace SwagLabs.Pages
 
         public override async Task InitAsync()
         {
+            _logger?.Information("Initializing [LoginPage]...");
             await UsernameTextBox.WaitToBeVisibleAsync();
             await PasswordTextBox.WaitToBeVisibleAsync();
             await LoginButton.WaitToBeVisibleAsync();
 
             _isInitialized = true;
+            _logger.Information("[LoginPage] initialized successfully.");
         }
 
-        public static async Task<LoginPage> InitAsync(IPage page)
+        public static async Task<LoginPage> InitAsync(IPage page, ILogger logger)
         {
-            LoginPage loginPage = new(page);
+            LoginPage loginPage = new(page, logger);
             await loginPage.InitAsync();
             return loginPage;
         }
 
         public async Task<ProductsPage> LoginAsync(string username, string password)
         {
+            _logger?.Information("Performing login with username: {Username}", username);
             EnsureInitialized();
             await UsernameTextBox.EnterTextAsync(username);
             await PasswordTextBox.EnterTextAsync(password);
             await ClickLoginButton();
-            return await ProductsPage.InitAsync(_page);
+            _logger.Information("Login successful, navigating to ProductsPage.");
+            return await ProductsPage.InitAsync(_page, _logger);
         }
 
         public async Task<LoginPage> LoginWithInvalidCredentialsAsync(string username, string password)
         {
+            _logger?.Information("Attempting login with invalid credentials. Username: {Username}", username);
             EnsureInitialized();
             await UsernameTextBox.EnterTextAsync(username);
             await PasswordTextBox.EnterTextAsync(password);
             await ClickLoginButton();
-            return await InitAsync(_page);
+            _logger.Information("Login attempt with invalid credentials completed.");
+            return await InitAsync(_page, _logger);
         }
 
         private async Task ClickLoginButton()

@@ -1,6 +1,7 @@
 ﻿using Controls;
 using Microsoft.Playwright;
 using static Controls.Control;
+using Serilog;
 
 namespace SwagLabs.Pages
 {
@@ -20,7 +21,7 @@ namespace SwagLabs.Pages
         public Button ContinueButton => _continueButton;
         public TextBox ErrorMessageTextBox => _errorMessageTextBox;
 
-        public CheckoutPage(IPage page) : base(page, "CheckoutPage")
+        public CheckoutPage(IPage page, ILogger logger) : base(page, "CheckoutPage", logger)
         {
             _firstNameTextBox = new TextBox(_page, GetBy.Placeholder, "First Name");
             _lastNameTextBox = new TextBox(_page, GetBy.Placeholder, "Last Name");
@@ -32,6 +33,7 @@ namespace SwagLabs.Pages
 
         public override async Task InitAsync()
         {
+            _logger?.Information("Initializing [CheckoutPage]...");
             await FirstNameTextBox.WaitToBeVisibleAsync();
             await LastNameTextBox.WaitToBeVisibleAsync();
             await PostalCodeTextBox.WaitToBeVisibleAsync();
@@ -39,17 +41,19 @@ namespace SwagLabs.Pages
             await ContinueButton.WaitToBeVisibleAsync();
 
             _isInitialized = true;
+            _logger.Information("[CheckoutPage] initialized successfully.");
         }
 
-        public static async Task<CheckoutPage> InitAsync(IPage page)
+        public static async Task<CheckoutPage> InitAsync(IPage page, ILogger logger)
         {
-            CheckoutPage checkoutPage = new(page);
+            CheckoutPage checkoutPage = new(page, logger);
             await checkoutPage.InitAsync();
             return checkoutPage;
         }
 
         public async Task<CheckoutPage> FillCheckoutInformationAsync(string firstName = "", string lastName = "", string postalCode = "")
         {
+            _logger?.Information("Filling checkout information...");
             EnsureInitialized();
             if (!string.IsNullOrWhiteSpace(firstName))
                 await FirstNameTextBox.EnterTextAsync(firstName);
@@ -57,28 +61,35 @@ namespace SwagLabs.Pages
                 await LastNameTextBox.EnterTextAsync(lastName);
             if (!string.IsNullOrWhiteSpace(postalCode))
                 await PostalCodeTextBox.EnterTextAsync(postalCode);
-            return await InitAsync(_page);
+            _logger.Information("Checkout information filled.");
+            return await InitAsync(_page, _logger);
         }
 
         public async Task<CheckoutOverviewPage> ClickContinueAsync()
         {
+            _logger?.Information("Clicking Continue button...");
             EnsureInitialized();
             await ContinueButton.ClickAsync();
-            return await CheckoutOverviewPage.InitAsync(_page);
+            _logger.Information("Navigated to Checkout Overview Page.");
+            return await CheckoutOverviewPage.InitAsync(_page, _logger);
         }
 
         public async Task<CheckoutPage> ClickContinueErrorExpectedAsync()
         {
+            _logger?.Information("Clicking Continue button expecting error...");
             EnsureInitialized();
             await ContinueButton.ClickAsync();
-            return await InitAsync(_page);
+            _logger.Information("Staying on Checkout Page due to expected error.");
+            return await InitAsync(_page, _logger);
         }
 
         public async Task<CartPage> ClickCancelAsync()
         {
+            _logger?.Information("Clicking Cancel button...");
             EnsureInitialized();
             await CancelButton.ClickAsync();
-            return await CartPage.InitAsync(_page);
+            _logger.Information("Navigated back to Cart Page.");
+            return await CartPage.InitAsync(_page, _logger);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Controls;
 using Microsoft.Playwright;
 using static Controls.Control;
+using Serilog;
 
 namespace SwagLabs.Pages
 {
@@ -24,7 +25,7 @@ namespace SwagLabs.Pages
         public Button CancelButton => _cancelButton;
         public Button FinishButton => _finishButton;
 
-        public CheckoutOverviewPage(IPage page) : base(page, "CheckoutOverviewPage")
+        public CheckoutOverviewPage(IPage page, ILogger logger) : base(page, "CheckoutOverviewPage", logger)
         {
             _productsItemList = new ListControl(_page, GetBy.CssSelector, "div.cart_list",GetBy.CssSelector, "div.cart_item");
             _paymentInformationTextBox = new TextBox(_page, GetBy.TestId, "payment-info-value");
@@ -38,6 +39,7 @@ namespace SwagLabs.Pages
 
         public override async Task InitAsync()
         {
+            _logger?.Information("Initializing [CheckoutOverviewPage]...");
             await ProductsItemList.WaitToBeVisibleAsync();
             await PaymentInformationTextBox.WaitToBeVisibleAsync();
             await ShippingInformationTextBox.WaitToBeVisibleAsync();
@@ -48,11 +50,12 @@ namespace SwagLabs.Pages
             await FinishButton.WaitToBeVisibleAsync();
 
             _isInitialized = true;
+            _logger.Information("[CheckoutOverviewPage] initialized successfully.");
         }
 
-        public static async Task<CheckoutOverviewPage> InitAsync(IPage page)
+        public static async Task<CheckoutOverviewPage> InitAsync(IPage page, ILogger logger)
         {
-            CheckoutOverviewPage checkoutOverviewPage = new(page);
+            CheckoutOverviewPage checkoutOverviewPage = new(page, logger);
             await checkoutOverviewPage.InitAsync();
             return checkoutOverviewPage;
         }
@@ -69,16 +72,20 @@ namespace SwagLabs.Pages
 
         public async Task<CheckoutPage> ClickCancelAsync()
         {
+            _logger?.Information("Clicking [Cancel] button on [CheckoutOverviewPage]...");
             EnsureInitialized();
             await CancelButton.ClickAsync();
-            return await CheckoutPage.InitAsync(_page);
+            _logger.Information("[Cancel] button clicked.");
+            return await CheckoutPage.InitAsync(_page, _logger);
         }
 
         public async Task<CheckoutCompletePage> ClickFinishAsync()
         {
+            _logger?.Information("Clicking [Finish] button on [CheckoutOverviewPage]...");
             EnsureInitialized();
             await _finishButton.ClickAsync();
-            return await CheckoutCompletePage.InitAsync(_page);
+            _logger.Information("[Finish] button clicked.");
+            return await CheckoutCompletePage.InitAsync(_page, _logger);
         }
     }
 }

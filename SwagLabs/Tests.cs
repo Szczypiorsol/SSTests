@@ -390,7 +390,7 @@ namespace SwagLabs
                 browserContext2 = await Browser.NewContextAsync();
                 IPage pageInstance2 = await browserContext2.NewPageAsync();
                 await pageInstance2.GotoAsync("https://www.saucedemo.com/");
-                LoginPage loginPage2 = await LoginPage.InitAsync(pageInstance2);
+                LoginPage loginPage2 = await LoginPage.InitAsync(pageInstance2, Logger);
                 string userToLogin = UserLogin == Users["StandardUser"] ? Users["VisualUser"] : Users["StandardUser"];
             
                 ProductsPage productsPage = await loginPage.LoginAsync(UserLogin, "secret_sauce");

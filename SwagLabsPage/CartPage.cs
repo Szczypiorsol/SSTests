@@ -1,5 +1,6 @@
 ﻿using Controls;
 using Microsoft.Playwright;
+using Serilog;
 using static Controls.Control;
 
 namespace SwagLabs.Pages
@@ -14,7 +15,7 @@ namespace SwagLabs.Pages
         public Button ContinueShoppingButton => _continueShoppingButton;
         public Button CheckoutButton => _checkoutButton;
 
-        public CartPage(IPage page) : base(page, "CartPage")
+        public CartPage(IPage page, ILogger logger) : base(page, "CartPage", logger)
         {
             _productsListControl = new ListControl(
                 page: _page,
@@ -29,16 +30,18 @@ namespace SwagLabs.Pages
 
         public override async Task InitAsync()
         {
+            _logger?.Information("Initializing [CartPage]...");
             await ProductsListControl.WaitToBeVisibleAsync();
             await ContinueShoppingButton.WaitToBeVisibleAsync();
             await CheckoutButton.WaitToBeVisibleAsync();
 
             _isInitialized = true;
+            _logger.Information("[CartPage] initialized successfully.");
         }
 
-        public static async Task<CartPage> InitAsync(IPage page)
+        public static async Task<CartPage> InitAsync(IPage page, ILogger logger)
         {
-            CartPage cartPage = new(page);
+            CartPage cartPage = new(page, logger);
             await cartPage.InitAsync();
             return cartPage;
         }
@@ -55,23 +58,29 @@ namespace SwagLabs.Pages
 
         public async Task<CartPage> RemoveCartItemAsync(int ordinalNumber)
         {
+            _logger.Information("Removing item #{OrdinalNumber} from the cart...", ordinalNumber);
             EnsureInitialized();
             await ProductsListControl.ClickOnItemElementAsync(ordinalNumber, "button");
-            return await InitAsync(_page);
+            _logger.Information("Item #{OrdinalNumber} removed from the cart.", ordinalNumber);
+            return await InitAsync(_page, _logger);
         }
 
         public async Task<ProductsPage> ClickContinueShoppingAsync()
         {
+            _logger.Information("Clicking 'Continue Shopping' button...");
             EnsureInitialized();
             await ContinueShoppingButton.ClickAsync();
-            return await ProductsPage.InitAsync(_page);
+            _logger.Information("'Continue Shopping' button clicked.");
+            return await ProductsPage.InitAsync(_page, _logger);
         }
 
         public async Task<CheckoutPage> ClickCheckoutAsync()
         {
+            _logger.Information("Clicking 'Checkout' button...");
             EnsureInitialized();
             await CheckoutButton.ClickAsync();
-            return await CheckoutPage.InitAsync(_page);
+            _logger.Information("'Checkout' button clicked.");
+            return await CheckoutPage.InitAsync(_page, _logger);
         }
     }
 }
